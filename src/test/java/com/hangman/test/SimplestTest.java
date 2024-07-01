@@ -1,5 +1,6 @@
 package com.hangman.test;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Configuration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,56 +26,43 @@ public class SimplestTest {
 
         //pseudocode:
         // open the browser at the hangman game, forcing it to use the target word "mississippi"
-        open("https://hangman-game-solution.netlify.app/?testWord=mississippi");
+        open("https://random-picker-paul.netlify.app/");
 
         // Verify initial state
-        $("[data-testid='miss-count']").shouldHave(exactText("0"));
-        $("[data-testid='loss-message']").shouldNotBe(visible);
-        $("[data-testid='win-message']").shouldNotBe(visible);
-        $("[data-testid='letter-board']").shouldHave(exactText("_ _ _ _ _ _ _ _ _ _ _"));
+        $("[id='root'] > h1").shouldHave(exactText("Random Picker"));
+        $("[class='text--area'] > textarea").shouldHave(exactText("player1 player2 player3 player4"));
+        $("[class='button'] > button").shouldHave(exactText("Random"));
+        $("[class='picked--word'] > p").shouldHave(exactText("Random Word"));
 
-        // Click 'X' - this will be a miss
-        $("[data-testid='letter-button-x']").click();
+        // Click to randomise word
+        $("[class='button'] > button").click();
 
-        // Verify miss-count increments
-        $("[data-testid='miss-count']").shouldHave(exactText("1"));
+        // Verify random word
+        Condition randomPlayerCondition = Condition.or("player1 or player2 or player3 or player4",
+                exactText("player1"),
+                exactText("player2"),
+                exactText("player3"),
+                exactText("player4"));
+        $("[class='picked--word'] > p").shouldHave(randomPlayerCondition);
 
-        // Click 'I'
-        $("[data-testid='letter-button-i']").click();
+        $("textarea").clear();
+        $("textarea").setValue("This is a new message");
 
-        // Verify letter board updates and 'I' is disabled
-        $("[data-testid='letter-board']").shouldHave(exactText("_ i _ _ i _ _ i _ _ i"));
-        $("[data-testid='letter-button-i']").shouldBe(disabled);
+        // Check new message is in box
+        $("textarea").shouldHave(value("This is a new message"));
 
-        // Click 'M' and 'S'
-        $("[data-testid='letter-button-m']").click();
-        $("[data-testid='letter-button-s']").click();
+        // Random word should still be the old word
+        $("[class='picked--word'] > p").shouldHave(randomPlayerCondition);
 
-        // Verify game is not over
-        $("[data-testid='win-message']").shouldNotBe(visible);
+        // Click to randomise word
+        $("[class='button'] > button").click();
 
-        // Click 'P'
-        $("[data-testid='letter-button-p']").click();
-
-        // Verify win message and no loss message
-        $("[data-testid='win-message']").shouldBe(visible);
-        $("[data-testid='loss-message']").shouldNotBe(visible);
-        $("[data-testid='letter-board']").shouldHave(exactText("m i s s i s s i p p i"));
-    }
-
-    @Test
-    public void playGameToLossYouWriteThisTest() {
-        //Task for the reader: design and write a test which plays the hangman game and loses.
-        //The test must be completely reliable -
-        // i.e. it should not have ANY possibility of winning (not, say, 1 in 10,000 times)
-
-        //open the browser automatically to this url.
-        open("https://hangman-game-solution.netlify.app/?testWord=potato");
-
-        //This test will fail - we don't really expect miss-count to be 99 at the start of a game!
-        //Delete this line once you've designed your test and are ready to start writing it
-        $("[data-testid='miss-count']").shouldHave(exactText("99"));
-
-        //You have to write the rest here
+        Condition newMessageCondition = Condition.or("new message",
+                exactText("This"),
+                exactText("is"),
+                exactText("a"),
+                exactText("new"),
+                exactText("message"));
+        $("[class='picked--word'] > p").shouldHave(newMessageCondition);
     }
 }
